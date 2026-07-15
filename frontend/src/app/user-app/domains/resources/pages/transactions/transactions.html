@@ -1,0 +1,119 @@
+<section class="transactions-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Transacciones</p>
+      <h1>Transacciones de consumo</h1>
+    </div>
+  </header>
+
+  @if (cargando()) {
+    <div class="state">Cargando transacciones...</div>
+  } @else {
+    @if (puedeRegistrar()) {
+      <form class="entry-form" [formGroup]="registroForm" (ngSubmit)="registrarConsumo()">
+        <header>
+          <span>Nuevo registro</span>
+          <strong>Consumo operativo</strong>
+        </header>
+
+        <label>
+          <span>Sede</span>
+          <select formControlName="sedeId">
+            @for (sede of sedes(); track sede.id) {
+              <option [ngValue]="sede.id">{{ sede.nombre }}</option>
+            }
+          </select>
+        </label>
+
+        <label>
+          <span>Recurso</span>
+          <select formControlName="tipoRecursoId">
+            @for (tipo of tipos(); track tipo.id) {
+              <option [ngValue]="tipo.id">{{ tipo.nombre }}</option>
+            }
+          </select>
+        </label>
+
+        <label>
+          <span>Periodo</span>
+          <input
+            type="month"
+            formControlName="periodo"
+            [attr.max]="periodoMaximo"
+            [class.is-invalid]="campoInvalido('periodo')"
+          />
+          @if (campoInvalido('periodo')) {
+            <small class="field-error">
+              @if (registroForm.controls.periodo.hasError('required')) {
+                El periodo es obligatorio.
+              } @else if (registroForm.controls.periodo.hasError('periodoFormato')) {
+                Usa el formato YYYY-MM.
+              } @else if (registroForm.controls.periodo.hasError('periodoFuturo')) {
+                No se puede registrar un periodo futuro.
+              }
+            </small>
+          }
+        </label>
+
+        <label>
+          <span>Cantidad</span>
+          <input type="number" min="1" formControlName="cantidad" [class.is-invalid]="campoInvalido('cantidad')" />
+          @if (campoInvalido('cantidad')) {
+            <small class="field-error">La cantidad debe ser mayor a cero.</small>
+          }
+        </label>
+
+        <label class="entry-form__wide">
+          <span>Observacion</span>
+          <input type="text" formControlName="observacion" placeholder="Opcional" />
+        </label>
+
+        <button type="submit" [disabled]="guardando()">
+          {{ guardando() ? 'Registrando...' : 'Registrar consumo' }}
+        </button>
+      </form>
+    }
+
+    <form class="filters" [formGroup]="filtros">
+      <label>
+        <span>Sede</span>
+        <select formControlName="sedeId">
+          @if (!sedeBloqueada()) {
+            <option [ngValue]="0">Todas las sedes</option>
+          }
+          @for (sede of sedes(); track sede.id) {
+            <option [ngValue]="sede.id">{{ sede.nombre }}</option>
+          }
+        </select>
+      </label>
+
+      <label>
+        <span>Recurso</span>
+        <select formControlName="tipoRecursoId">
+          <option [ngValue]="0">Todos los recursos</option>
+          @for (tipo of tipos(); track tipo.id) {
+            <option [ngValue]="tipo.id">{{ tipo.nombre }}</option>
+          }
+        </select>
+      </label>
+
+      <label>
+        <span>Periodo</span>
+        <input type="month" formControlName="periodo" [attr.max]="periodoMaximo" />
+      </label>
+    </form>
+
+    <div class="stat-grid">
+      <app-resource-stat-card label="Registros" [value]="consumosFiltrados().length.toString()" detail="Segun filtros" />
+      <app-resource-stat-card label="Costo filtrado" [value]="formatearMonto(totalCosto())" detail="Moneda PEN" />
+      <app-resource-stat-card
+        label="Observados"
+        [value]="observados().toString()"
+        detail="Pendientes de revision"
+        [tone]="observados() > 0 ? 'warning' : 'neutral'"
+      />
+    </div>
+
+    <app-consumption-table [consumos]="consumosFiltrados()" />
+  }
+</section>

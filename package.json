@@ -1,0 +1,17 @@
+{
+  "name": "luxury-corporate-unificado",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Proyecto unificado con frontend Angular y backend Spring Boot.",
+  "scripts": {
+    "install:frontend": "npm --prefix frontend install",
+    "start:frontend": "npm --prefix frontend start",
+    "start:backend": "powershell -ExecutionPolicy Bypass -File scripts/start-backend.ps1",
+    "dev": "concurrently -n backend,frontend -c blue,green \"npm run start:backend\" \"npm run start:frontend\"",
+    "build:frontend": "npm --prefix frontend run build",
+    "test:backend": "powershell -ExecutionPolicy Bypass -File scripts/test-backend.ps1"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

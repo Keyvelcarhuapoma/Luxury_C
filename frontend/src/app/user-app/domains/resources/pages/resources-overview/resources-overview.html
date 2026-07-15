@@ -1,0 +1,101 @@
+<section class="resources-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Recursos</p>
+      <h1>Centro de recursos</h1>
+    </div>
+  </header>
+
+  @if (cargando()) {
+    <div class="state">Cargando recursos...</div>
+  } @else {
+    @if (resumen(); as data) {
+      <div class="stat-grid">
+        <app-resource-stat-card label="Sedes activas" [value]="data.sedesActivas.toString()" detail="Operativas este mes" />
+        <app-resource-stat-card label="Consumos" [value]="consumos().length.toString()" [detail]="'Registros ' + periodoActual" />
+        <app-resource-stat-card label="Costo mensual" [value]="formatearMonto(data.costoTotalMes)" detail="Energia y agua" />
+        <app-resource-stat-card
+          label="Observados"
+          [value]="data.registrosObservados.toString()"
+          detail="Requieren revision"
+          [tone]="data.registrosObservados > 0 ? 'warning' : 'neutral'"
+        />
+      </div>
+    }
+
+    @if (puedeCrearSede()) {
+      <form class="panel site-form" [formGroup]="sedeForm" (ngSubmit)="crearSede()">
+        <header>
+          <span>Nueva sede</span>
+        </header>
+
+        <div class="site-form__grid">
+          <label>
+            <span>Nombre</span>
+            <input type="text" formControlName="nombre" />
+          </label>
+          <label>
+            <span>Codigo</span>
+            <input type="text" formControlName="codigo" />
+          </label>
+          <label>
+            <span>Ciudad</span>
+            <input type="text" formControlName="ciudad" />
+          </label>
+          <label>
+            <span>Direccion</span>
+            <input type="text" formControlName="direccion" />
+          </label>
+          <label>
+            <span>Responsable</span>
+            <input type="text" formControlName="responsable" />
+          </label>
+          <button type="submit" [disabled]="guardandoSede()">
+            {{ guardandoSede() ? 'Guardando...' : 'Crear sede' }}
+          </button>
+        </div>
+      </form>
+    }
+
+    <div class="split">
+      <section class="panel">
+        <header>
+          <span>Sedes</span>
+          <strong>{{ sedes().length }} registradas</strong>
+        </header>
+        <div class="site-list">
+          @for (sede of sedes(); track sede.id) {
+            <article>
+              <strong>{{ sede.nombre }}</strong>
+              <span>{{ sede.codigo }} / {{ sede.ciudad }}</span>
+              <small>{{ sede.responsable }}</small>
+            </article>
+          }
+        </div>
+      </section>
+
+      <section class="panel">
+        <header>
+          <span>Tipos de recurso</span>
+          <strong>{{ tipos().length }} activos</strong>
+        </header>
+        <div class="type-list">
+          @for (tipo of tipos(); track tipo.id) {
+            <article>
+              <strong>{{ tipo.nombre }}</strong>
+              <span>{{ tipo.codigo }} / {{ tipo.unidad }}</span>
+            </article>
+          }
+        </div>
+      </section>
+    </div>
+
+    <section class="panel">
+      <header>
+        <span>Consumos recientes</span>
+        <strong>Periodo {{ periodoActual }}</strong>
+      </header>
+      <app-consumption-table [consumos]="consumosRecientes()" />
+    </section>
+  }
+</section>

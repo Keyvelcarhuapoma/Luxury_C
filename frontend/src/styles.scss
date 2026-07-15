@@ -1,0 +1,197 @@
+@use 'styles/variables' as v;
+
+@use 'styles/tokens';
+
+
+@import '@fontsource/geist-sans/400.css';
+@import '@fontsource/geist-sans/500.css';
+@import '@fontsource/geist-sans/600.css';
+@import '@fontsource/geist-mono/400.css';
+@import '@fontsource/geist-mono/500.css';
+
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+html {
+
+
+  background: var(--bg);
+}
+
+body {
+  margin: 0;
+  font-family: v.$font-sans;
+  font-size: v.$font-size-base;
+  line-height: 1.5;
+  color: var(--text-primary);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color v.$duration-base v.$ease-out, color v.$duration-base v.$ease-out;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4 {
+  font-family: v.$font-sans;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text-primary);
+  letter-spacing: 0;
+}
+
+p {
+  margin: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  color: inherit;
+}
+
+input, select, textarea {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+
+ul, ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 999px;
+  border: 2px solid var(--bg);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary);
+}
+
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+@media (max-width: 760px) {
+  .content,
+  .content * {
+    min-width: 0;
+  }
+
+  .content h1 {
+    font-size: clamp(1.8rem, 10vw, 2.6rem);
+    line-height: 1.05;
+    overflow-wrap: anywhere;
+  }
+
+  .content .page-header,
+  .content .work-header,
+  .content .panel header,
+  .content .actions-panel header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .content .panel,
+  .content .stat,
+  .content .message,
+  .content .state,
+  .content .welcome-panel,
+  .content .actions-panel,
+  .content .action-card,
+  .content .panel-card {
+    padding: 0.85rem;
+  }
+
+  .content .table-wrap {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .content table {
+    max-width: none;
+  }
+
+  .content input,
+  .content select,
+  .content textarea,
+  .content button {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 420px) {
+  body {
+    font-size: 0.94rem;
+  }
+
+  .content h1 {
+    font-size: clamp(1.65rem, 11vw, 2.25rem);
+  }
+
+  .content .actions,
+  .content .filter-actions,
+  .content .form-actions,
+  .content .row-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .content .actions button,
+  .content .filter-actions button,
+  .content .form-actions button {
+    width: 100%;
+  }
+}

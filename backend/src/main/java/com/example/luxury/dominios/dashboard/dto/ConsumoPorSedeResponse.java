@@ -1,0 +1,17 @@
+package com.example.luxury.dominios.dashboard.dto;
+
+import java.math.BigDecimal;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class ConsumoPorSedeResponse {
+	private Long sedeId;
+	private String sede;
+	private BigDecimal energiaKwh;
+	private BigDecimal aguaM3;
+}

@@ -1,0 +1,180 @@
+package com.example.luxury.config;
+
+import java.io.IOException;
+import java.util.List;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
+import org.springframework.security.config.annotation.web.configurers.CorsConfigurer;
+import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
+import org.springframework.security.config.annotation.web.configurers.ExceptionHandlingConfigurer;
+import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
+import org.springframework.security.config.annotation.web.configurers.SessionManagementConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+@Configuration
+@EnableMethodSecurity
+public class SecurityConfig {
+
+	@Autowired
+	private UserDetailsService userDetailsService;
+
+	@Autowired
+	private com.example.luxury.dominios.seguridad.security.FiltroJwt filtroJwt;
+
+	@Bean
+	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+		http.csrf(new Customizer<CsrfConfigurer<HttpSecurity>>() {
+			@Override
+			public void customize(CsrfConfigurer<HttpSecurity> csrf) {
+				csrf.disable();
+			}
+		})
+		.cors(new Customizer<CorsConfigurer<HttpSecurity>>() {
+			@Override
+			public void customize(CorsConfigurer<HttpSecurity> cors) {
+				cors.configurationSource(corsConfigurationSource());
+			}
+		})
+		.sessionManagement(new Customizer<SessionManagementConfigurer<HttpSecurity>>() {
+			@Override
+			public void customize(SessionManagementConfigurer<HttpSecurity> session) {
+				session.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+			}
+		})
+		.authorizeHttpRequests(new Customizer<AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry>() {
+			@Override
+			public void customize(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry auth) {
+				auth
+						// Publico
+						.requestMatchers("/api/auth/**").permitAll()
+						.requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
+
+						// API REST por rol
+						.requestMatchers("/api/usuarios/**").hasRole("ADMIN")
+						.requestMatchers("/api/dashboard/**").hasAnyRole("ADMIN", "GERENTE")
+						.requestMatchers("/api/sedes/**", "/api/tipos-recurso/**")
+							.hasAnyRole("ADMIN", "GERENTE", "OPERADOR", "ANALISTA")
+						.requestMatchers("/api/consumos/**")
+							.hasAnyRole("ADMIN", "GERENTE", "OPERADOR", "ANALISTA")
+						.requestMatchers("/api/tarifas/**", "/api/umbrales/**", "/api/alertas/**")
+							.hasAnyRole("ADMIN", "GERENTE")
+						.requestMatchers("/api/monedas/**", "/api/tipos-cambio/**")
+							.hasAnyRole("ADMIN", "GERENTE")
+						.requestMatchers("/api/auditorias/**", "/api/eventos-acceso/**")
+							.hasAnyRole("ADMIN", "AUDITOR")
+						.requestMatchers("/api/reportes/**")
+							.hasAnyRole("ADMIN", "GERENTE", "AUDITOR", "ANALISTA")
+						.requestMatchers("/api/sessions/events").authenticated()
+						.requestMatchers("/api/session-monitoring/**").hasRole("ADMIN")
+						.requestMatchers("/api/**").authenticated()
+
+						// Vistas MVC Thymeleaf
+						.requestMatchers("/auth/**", "/css/**", "/error", "/login", "/registro").permitAll()
+						.requestMatchers("/usuarios/**").hasRole("ADMIN")
+						.requestMatchers("/auditorias/**", "/eventos-acceso/**").hasAnyRole("ADMIN", "AUDITOR")
+						.requestMatchers("/consumos/**").hasAnyRole("ADMIN", "ANALISTA", "GERENTE")
+						.requestMatchers("/", "/dashboard/**").hasAnyRole("ADMIN", "GERENTE")
+						.requestMatchers("/reportes/**").hasAnyRole("ADMIN", "GERENTE", "AUDITOR", "ANALISTA")
+				.anyRequest().authenticated();
+			}
+		})
+		.exceptionHandling(new Customizer<ExceptionHandlingConfigurer<HttpSecurity>>() {
+			@Override
+			public void customize(ExceptionHandlingConfigurer<HttpSecurity> ex) {
+				ex.authenticationEntryPoint(new AuthenticationEntryPoint() {
+					@Override
+					public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
+						if (request.getRequestURI().startsWith("/api/")) {
+							response.setStatus(HttpStatus.UNAUTHORIZED.value());
+							response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+							response.getWriter().write("{\"status\":401,\"error\":\"UNAUTHORIZED\",\"message\":\"Token requerido o invalido\"}");
+						} else {
+							response.sendRedirect("/auth/login");
+						}
+					}
+				})
+				.accessDeniedHandler(new AccessDeniedHandler() {
+					@Override
+					public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException deniedException) throws IOException, ServletException {
+						if (request.getRequestURI().startsWith("/api/")) {
+							response.setStatus(HttpStatus.FORBIDDEN.value());
+							response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+							response.getWriter().write("{\"status\":403,\"error\":\"FORBIDDEN\",\"message\":\"No tienes permiso para acceder a este recurso.\"}");
+						} else {
+							response.sendRedirect("/error");
+						}
+					}
+				});
+			}
+		})
+		.addFilterBefore(filtroJwt, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
+		.logout(new Customizer<LogoutConfigurer<HttpSecurity>>() {
+			@Override
+			public void customize(LogoutConfigurer<HttpSecurity> logout) {
+				logout.logoutUrl("/logout")
+						.logoutSuccessUrl("/auth/login?logout")
+						.deleteCookies("tokenAcceso")
+						.permitAll();
+			}
+		})
+		.authenticationProvider(authenticationProvider());
+		return http.build();
+	}
+
+	@Bean
+	AuthenticationProvider authenticationProvider() {
+		DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
+		provider.setPasswordEncoder(passwordEncoder());
+		return provider;
+	}
+
+	@Bean
+	AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+		return configuration.getAuthenticationManager();
+	}
+
+	@Bean
+	PasswordEncoder passwordEncoder() {
+		return new BCryptPasswordEncoder();
+	}
+
+	@Bean
+	CorsConfigurationSource corsConfigurationSource() {
+		CorsConfiguration configuration = new CorsConfiguration();
+		configuration.setAllowedOrigins(List.of("http://localhost:4200", "http://127.0.0.1:4200"));
+		configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+		configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));
+		configuration.setAllowCredentials(true);
+
+		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+		source.registerCorsConfiguration("/api/**", configuration);
+		return source;
+	}
+}

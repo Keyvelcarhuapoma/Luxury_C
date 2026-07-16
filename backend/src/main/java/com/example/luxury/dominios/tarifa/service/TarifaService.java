@@ -1,5 +1,6 @@
 package com.example.luxury.dominios.tarifa.service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,7 +11,9 @@ import org.springframework.stereotype.Service;
 
 import com.example.luxury.dominios.common.enums.EstadoRegistro;
 import com.example.luxury.dominios.common.exception.ResourceNotFoundException;
+import com.example.luxury.dominios.recurso.model.TipoRecurso;
 import com.example.luxury.dominios.recurso.service.TipoRecursoService;
+import com.example.luxury.dominios.sede.model.Sede;
 import com.example.luxury.dominios.sede.service.SedeService;
 import com.example.luxury.dominios.tarifa.dto.TarifaRequest;
 import com.example.luxury.dominios.tarifa.dto.TarifaResponse;
@@ -72,7 +75,21 @@ public class TarifaService {
 		if (tarifaOptional.isPresent()) {
 			return tarifaOptional.get();
 		}
-		throw new ResourceNotFoundException("No existe tarifa vigente para la sede y recurso");
+		Sede sede = sedeService.buscar(sedeId);
+		TipoRecurso tipo = tipoRecursoService.buscar(tipoRecursoId);
+		TarifaRecurso defaultTarifa = new TarifaRecurso();
+		defaultTarifa.setSede(sede);
+		defaultTarifa.setTipoRecurso(tipo);
+		String nombreTipo = tipo.getNombre() != null ? tipo.getNombre().toUpperCase() : "";
+		if (nombreTipo.contains("AGUA")) {
+			defaultTarifa.setPrecioUnitarioPen(new BigDecimal("13.0300"));
+		} else if (nombreTipo.contains("GAS")) {
+			defaultTarifa.setPrecioUnitarioPen(new BigDecimal("0.8879"));
+		} else {
+			defaultTarifa.setPrecioUnitarioPen(new BigDecimal("0.6263"));
+		}
+		defaultTarifa.setFechaInicio(LocalDate.of(2026, 1, 1));
+		return tarifaRepository.save(defaultTarifa);
 	}
 
 	private void aplicar(TarifaRecurso tarifa, TarifaRequest request) {

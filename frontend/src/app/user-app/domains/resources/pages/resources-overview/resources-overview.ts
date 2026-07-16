@@ -42,7 +42,7 @@ export class ResourcesOverview {
 
   readonly sedeForm = this.fb.nonNullable.group({
     nombre: ['', [Validators.required, Validators.minLength(3)]],
-    codigo: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(10)]],
+    codigo: ['', [Validators.required, Validators.minLength(1), Validators.maxLength(10)]],
     ciudad: ['', [Validators.required, Validators.minLength(3)]],
     direccion: ['', [Validators.required, Validators.minLength(5)]],
     responsable: ['', [Validators.required, Validators.minLength(3)]],
@@ -77,25 +77,27 @@ export class ResourcesOverview {
 
     if (this.sedeForm.invalid) {
       this.sedeForm.markAllAsTouched();
+      this.notificacionService.advertencia('Por favor completa todos los campos correctamente. El código debe tener al menos 1 carácter y la dirección al menos 5.');
       return;
     }
 
+    const _this = this;
     this.guardandoSede.set(true);
-    this.resourcesService.crearSede(this.sedeForm.getRawValue()).subscribe((sede) => {
-      this.sedes.update((sedes) => [sede, ...sedes]);
-      this.resumen.update((resumen) =>
-        resumen ? { ...resumen, sedesActivas: resumen.sedesActivas + 1 } : resumen,
-      );
-      this.guardandoSede.set(false);
-      this.sedeForm.reset({
+    this.resourcesService.crearSede(this.sedeForm.getRawValue()).subscribe(function(sede) {
+      _this.sedes.update(function(sedes) { return [sede, ...sedes]; });
+      _this.resumen.update(function(resumen) {
+        return resumen ? { ...resumen, sedesActivas: resumen.sedesActivas + 1 } : resumen;
+      });
+      _this.guardandoSede.set(false);
+      _this.sedeForm.reset({
         nombre: '',
         codigo: '',
         ciudad: '',
         direccion: '',
         responsable: '',
       });
-      this.notificacionService.exito(`Sede ${sede.nombre} creada.`);
-      this.sessionMonitoringService.registrarActividadUsuario(
+      _this.notificacionService.exito(`Sede ${sede.nombre} creada.`);
+      _this.sessionMonitoringService.registrarActividadUsuario(
         'GESTION_SEDES',
         `Creacion de sede ${sede.nombre}.`,
         {

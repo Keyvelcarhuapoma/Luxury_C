@@ -28,6 +28,8 @@ import com.example.luxury.dominios.seguridad.services.GestionUsuarioService;
 import com.example.luxury.dominios.seguridad.services.TokenService;
 import com.example.luxury.dominios.sede.dto.SedeResponse;
 import com.example.luxury.dominios.sede.service.SedeService;
+import com.example.luxury.dominios.eventoacceso.service.EventoAccesoService;
+import com.example.luxury.dominios.common.enums.TipoEventoAcceso;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -38,26 +40,39 @@ public class ApiAuthController {
     private final GestionUsuarioService gestionUsuarioService;
     private final TokenService tokenService;
     private final SedeService sedeService;
+    private final EventoAccesoService eventoAccesoService;
 
     public ApiAuthController(AuthenticationManager authenticationManager, UsuarioRepository usuarioRepository,
-            GestionUsuarioService gestionUsuarioService, TokenService tokenService, SedeService sedeService) {
+            GestionUsuarioService gestionUsuarioService, TokenService tokenService, SedeService sedeService,
+            EventoAccesoService eventoAccesoService) {
         this.authenticationManager = authenticationManager;
         this.usuarioRepository = usuarioRepository;
         this.gestionUsuarioService = gestionUsuarioService;
         this.tokenService = tokenService;
         this.sedeService = sedeService;
+        this.eventoAccesoService = eventoAccesoService;
     }
 
     @PostMapping("/login")
     public Map<String, Object> login(@Valid @RequestBody LoginApiRequest request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.identificador(), request.contrasena()));
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.identificador(), request.contrasena()));
+        } catch (Exception e) {
+            Optional<Usuario> optUsuario = usuarioRepository.buscarPorIdentificador(request.identificador());
+            eventoAccesoService.registrar(optUsuario.orElse(null), request.identificador(),
+                    TipoEventoAcceso.LOGIN_FALLIDO, "Intento de inicio de sesion fallido por credenciales incorrectas.", "API / Angular");
+            throw e;
+        }
 
         Optional<Usuario> opt = usuarioRepository.buscarPorIdentificador(request.identificador());
         if (opt.isEmpty()) {
             throw new IllegalArgumentException("Usuario no encontrado.");
         }
         Usuario usuario = opt.get();
+
+        eventoAccesoService.registrar(usuario, request.identificador(),
+                TipoEventoAcceso.LOGIN_EXITOSO, "Inicio de sesion exitoso via API", "API / Angular");
 
         Map<String, Object> data = new LinkedHashMap<>();
         data.put("token", tokenService.generarToken(usuario));

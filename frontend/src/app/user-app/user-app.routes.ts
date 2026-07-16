@@ -71,6 +71,19 @@ export const USER_APP_ROUTES: Routes = [
         title: 'Luxury - Agua',
       },
       {
+        path: 'resources/gas',
+        canActivate: [roleGuard],
+        data: {
+          roles: ['ADMIN', 'GERENTE', 'OPERADOR'],
+        },
+        loadComponent: function() {
+          return import('./domains/resources/pages/gas-consumption/gas-consumption').then(
+            function(m) { return m.GasConsumption; },
+          );
+        },
+        title: 'Luxury - Gas',
+      },
+      {
         path: 'resources/transactions',
         canActivate: [roleGuard],
         data: {

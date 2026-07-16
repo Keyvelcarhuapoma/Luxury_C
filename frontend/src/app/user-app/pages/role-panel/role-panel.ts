@@ -63,7 +63,7 @@ const PANEL_CARDS: Record<NombreRol, RolePanelCard[]> = {
   ],
   OPERADOR: [
     { title: 'Registros del mes', value: '2', detail: 'Consumos de tu sede' },
-    { title: 'Recursos activos', value: '2', detail: 'Energia y agua' },
+    { title: 'Recursos activos', value: '4', detail: 'Energia, agua, gas y otros' },
     { title: 'Pendientes', value: '0', detail: 'Sin alertas asignadas' },
   ],
   AUDITOR: [
@@ -73,7 +73,7 @@ const PANEL_CARDS: Record<NombreRol, RolePanelCard[]> = {
   ],
   ANALISTA: [
     { title: 'Reportes', value: '3', detail: 'Periodos disponibles' },
-    { title: 'Recursos', value: '2', detail: 'Tipos monitoreados' },
+    { title: 'Recursos', value: '4', detail: 'Tipos monitoreados' },
     { title: 'Sede', value: '1', detail: 'Alcance asignado' },
   ],
 };
@@ -90,7 +90,7 @@ const PANEL_ACTIONS: Record<NombreRol, RoleAction[]> = {
     { label: 'Generar reportes', detail: 'Consultar documentos ejecutivos del periodo.', route: '/reports' },
   ],
   OPERADOR: [
-    { label: 'Registrar consumo', detail: 'Agregar consumo de energia o agua.', route: '/resources/transactions' },
+    { label: 'Registrar consumo', detail: 'Agregar consumo de energia, agua o gas.', route: '/resources/transactions' },
     { label: 'Consultar recursos', detail: 'Revisar informacion de tu sede.', route: '/resources' },
   ],
   AUDITOR: [

@@ -103,9 +103,9 @@
       <section class="panel">
         <header>
           <span>Eventos de acceso</span>
-          <strong>{{ accesosObservados().length }} observados</strong>
+          <strong>{{ eventosAcceso().length }} eventos ({{ accesosObservados().length }} obs.)</strong>
         </header>
-        <div class="table-wrap">
+        <div class="table-wrap table-wrap--accesos">
           <table>
             <thead>
               <tr>
@@ -127,6 +127,10 @@
                   <td>{{ evento.tipo }}</td>
                   <td>{{ evento.rutaSolicitada || 'N/A' }}</td>
                   <td><span [class]="claseAcceso(evento)">{{ evento.exitoso ? 'EXITOSO' : 'OBSERVADO' }}</span></td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td class="empty" colspan="5">No hay eventos de acceso registrados actualmente.</td>
                 </tr>
               }
             </tbody>

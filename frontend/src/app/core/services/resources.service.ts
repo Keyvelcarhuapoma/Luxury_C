@@ -35,10 +35,12 @@ export class ResourcesService {
   obtenerSedes(): Observable<Sede[]> {
     if (environment.useMocks) {
       const sedes = this.storage.obtenerLista(this.sedesKey, SEDES_MOCK);
-      return of(this.accessScope.filtrarSedes(sedes)).pipe(delay(this.mockDelayMs));
+      return of(this.ordenarSedesDesc(this.accessScope.filtrarSedes(sedes))).pipe(delay(this.mockDelayMs));
     }
 
-    return this.http.get<Sede[]>(`${this.apiBaseUrl}/sedes`);
+    return this.http.get<Sede[]>(`${this.apiBaseUrl}/sedes`).pipe(
+      map(function(sedes) { return [...sedes].sort(function(a, b) { return Number(b.id) - Number(a.id); }); }),
+    );
   }
 
   crearSede(request: CrearSedeRequest): Observable<Sede> {
@@ -69,15 +71,25 @@ export class ResourcesService {
     return this.http.get<TipoRecurso[]>(`${this.apiBaseUrl}/tipos-recurso`);
   }
 
+  private ordenarSedesDesc(sedes: Sede[]): Sede[] {
+    return [...sedes].sort(function(a, b) { return Number(b.id) - Number(a.id); });
+  }
+
+  private ordenarConsumosDesc(consumos: Consumo[]): Consumo[] {
+    return [...consumos].sort(function(a, b) { return Number(b.id) - Number(a.id); });
+  }
+
   obtenerConsumos(): Observable<Consumo[]> {
     if (environment.useMocks) {
       const consumos = this.storage.obtenerLista(this.consumosKey, CONSUMOS_MOCK);
-      return of(this.accessScope.filtrarPorSede(consumos)).pipe(
+      return of(this.ordenarConsumosDesc(this.accessScope.filtrarPorSede(consumos))).pipe(
         delay(this.mockDelayMs),
       );
     }
 
-    return this.http.get<Consumo[]>(`${this.apiBaseUrl}/consumos`);
+    return this.http.get<Consumo[]>(`${this.apiBaseUrl}/consumos`).pipe(
+      map(function(list) { return [...list].sort(function(a, b) { return Number(b.id) - Number(a.id); }); }),
+    );
   }
 
   crearConsumo(request: CrearConsumoRequest): Observable<Consumo> {
@@ -139,7 +151,9 @@ export class ResourcesService {
       );
     }
 
-    return this.http.get<Consumo[]>(`${this.apiBaseUrl}/consumos/sede/${idSede}`);
+    return this.http.get<Consumo[]>(`${this.apiBaseUrl}/consumos/sede/${idSede}`).pipe(
+      map(function(list) { return [...list].sort(function(a, b) { return Number(b.id) - Number(a.id); }); }),
+    );
   }
 
   obtenerConsumosPorPeriodo(periodo: string): Observable<Consumo[]> {
@@ -149,7 +163,9 @@ export class ResourcesService {
       );
     }
 
-    return this.http.get<Consumo[]>(`${this.apiBaseUrl}/consumos/periodo/${periodo}`);
+    return this.http.get<Consumo[]>(`${this.apiBaseUrl}/consumos/periodo/${periodo}`).pipe(
+      map(function(list) { return [...list].sort(function(a, b) { return Number(b.id) - Number(a.id); }); }),
+    );
   }
 
   obtenerResumenRecursos(): Observable<ResourcesResumen> {

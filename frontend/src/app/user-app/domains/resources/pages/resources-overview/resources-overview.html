@@ -13,7 +13,7 @@
       <div class="stat-grid">
         <app-resource-stat-card label="Sedes activas" [value]="data.sedesActivas.toString()" detail="Operativas este mes" />
         <app-resource-stat-card label="Consumos" [value]="consumos().length.toString()" [detail]="'Registros ' + periodoActual" />
-        <app-resource-stat-card label="Costo mensual" [value]="formatearMonto(data.costoTotalMes)" detail="Energia y agua" />
+        <app-resource-stat-card label="Costo mensual" [value]="formatearMonto(data.costoTotalMes)" detail="Todos los recursos" />
         <app-resource-stat-card
           label="Observados"
           [value]="data.registrosObservados.toString()"

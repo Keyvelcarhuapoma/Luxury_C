@@ -37,6 +37,12 @@ const NAVIGATION_ITEMS: NavigationItem[] = [
     roles: ['ADMIN', 'GERENTE', 'OPERADOR'],
   },
   {
+    label: 'Gas',
+    shortLabel: 'G',
+    route: '/resources/gas',
+    roles: ['ADMIN', 'GERENTE', 'OPERADOR'],
+  },
+  {
     label: 'Transacciones',
     shortLabel: 'T',
     route: '/resources/transactions',

@@ -222,3 +222,28 @@ SET monto_calculado = (
 ),
 fecha_calculo = current_timestamp
 WHERE id_moneda IN (SELECT id_moneda FROM monedas WHERE codigo IN ('USD', 'EUR'));
+
+-- 13. EVENTOS DE ACCESO INICIALES
+INSERT INTO eventos_acceso (id_usuario, email_intentado, tipo_evento, descripcion, fecha, ip)
+SELECT u.id, 'admin@luxury.com', 'LOGIN_EXITOSO', 'Ingreso exitoso al panel de control.', current_timestamp - INTERVAL '2 hours', '190.41.22.18'
+FROM usuarios u WHERE u.correo = 'admin@luxury.com'
+AND NOT EXISTS (SELECT 1 FROM eventos_acceso ea WHERE ea.email_intentado = 'admin@luxury.com' AND ea.tipo_evento = 'LOGIN_EXITOSO');
+
+INSERT INTO eventos_acceso (id_usuario, email_intentado, tipo_evento, descripcion, fecha, ip)
+SELECT u.id, 'gerente@luxury.com', 'LOGIN_EXITOSO', 'Ingreso administrativo para supervision de KPIs.', current_timestamp - INTERVAL '1 hour', '190.41.22.24'
+FROM usuarios u WHERE u.correo = 'gerente@luxury.com'
+AND NOT EXISTS (SELECT 1 FROM eventos_acceso ea WHERE ea.email_intentado = 'gerente@luxury.com' AND ea.tipo_evento = 'LOGIN_EXITOSO');
+
+INSERT INTO eventos_acceso (id_usuario, email_intentado, tipo_evento, descripcion, fecha, ip)
+SELECT u.id, 'operador@luxury.com', 'LOGIN_EXITOSO', 'Ingreso operativo de registro de consumos.', current_timestamp - INTERVAL '30 minutes', '190.41.22.51'
+FROM usuarios u WHERE u.correo = 'operador@luxury.com'
+AND NOT EXISTS (SELECT 1 FROM eventos_acceso ea WHERE ea.email_intentado = 'operador@luxury.com' AND ea.tipo_evento = 'LOGIN_EXITOSO');
+
+INSERT INTO eventos_acceso (id_usuario, email_intentado, tipo_evento, descripcion, fecha, ip)
+SELECT NULL, 'desconocido@luxury.pe', 'LOGIN_FALLIDO', 'Intento de inicio de sesion con credenciales invalidas.', current_timestamp - INTERVAL '15 minutes', '181.65.102.14'
+WHERE NOT EXISTS (SELECT 1 FROM eventos_acceso ea WHERE ea.email_intentado = 'desconocido@luxury.pe' AND ea.tipo_evento = 'LOGIN_FALLIDO');
+
+INSERT INTO eventos_acceso (id_usuario, email_intentado, tipo_evento, descripcion, fecha, ip)
+SELECT u.id, 'operador@luxury.com', 'TOKEN_EXPIRADO', 'Sesion expirada por inactividad durante carga de datos.', current_timestamp - INTERVAL '10 minutes', '190.41.22.51'
+FROM usuarios u WHERE u.correo = 'operador@luxury.com'
+AND NOT EXISTS (SELECT 1 FROM eventos_acceso ea WHERE ea.email_intentado = 'operador@luxury.com' AND ea.tipo_evento = 'TOKEN_EXPIRADO');

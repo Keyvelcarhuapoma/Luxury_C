@@ -90,6 +90,7 @@ label span {
   display: grid;
   gap: 1rem;
   padding: 1rem;
+  align-content: start;
 }
 
 .panel header {
@@ -147,6 +148,7 @@ button {
 
 .tables-grid {
   grid-template-columns: minmax(0, 1.35fr) minmax(24rem, 0.85fr);
+  align-items: start;
 }
 
 .table-wrap {
@@ -159,6 +161,10 @@ table {
   width: 100%;
   min-width: 48rem;
   border-collapse: collapse;
+}
+
+.table-wrap--accesos table {
+  min-width: 26rem;
 }
 
 th,
